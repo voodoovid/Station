@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#07101f">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://api.github.com" crossorigin>
+<title>Station Test</title>
+<style>
+:root{--y:#f4b942;--ok:#3ecf8e;--bad:#ff5d6c;--wait:#8aa0bf;--card:rgba(10,18,34,.92);--line:rgba(255,255,255,.16)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:#07101f;color:#fff;font:600 15px/1.3 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+body{padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 16px) calc(env(safe-area-inset-left) + 16px)}
+header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+header img{width:34px;height:34px;border-radius:9px}
+h1{font-size:24px;font-weight:800;letter-spacing:-.2px}
+h1 i{font-style:normal;color:var(--y)}
+.ver{margin-left:auto;font-size:13px;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid var(--line);white-space:nowrap}
+.ib{flex:none;width:40px;height:40px;border-radius:12px;border:1.5px solid rgba(255,255,255,.32);background:rgba(255,255,255,.08);color:#fff;font-size:19px;font-weight:800;cursor:pointer;display:grid;place-items:center}
+.ib:active{transform:scale(.96)}
+main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}
+@media (max-width:900px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.lh{display:flex;align-items:center;gap:10px}
+.lh h2{font-size:20px;font-weight:800}
+.tag{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#bfe3ff;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.06)}
+.sec{font-size:11px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:#bfe3ff;margin:6px 4px 0}
+#tests{display:flex;flex-direction:column;gap:6px}
+.t{display:flex;gap:10px;align-items:flex-start;padding:7px 10px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.t .dot{flex:none;width:40px;height:22px;border-radius:999px;font-size:10.5px;font-weight:800;display:grid;place-items:center;background:var(--wait);color:#07101f}
+.t.pass .dot{background:var(--ok)}.t.fail .dot{background:var(--bad);color:#fff}.t.info .dot{background:var(--y)}.t.skip .dot{background:rgba(255,255,255,.18);color:#c9dcf5}
+.t b{display:block;font-size:14px}
+.t span{display:block;font-size:12px;font-weight:600;color:#c9dcf5;margin-top:2px;word-break:break-word}
+.sum{margin-top:2px;padding:10px;border-radius:14px;text-align:center;font-weight:800;font-size:16px;background:rgba(255,255,255,.08)}
+.sum.pass{background:rgba(62,207,142,.2);color:var(--ok)}.sum.fail{background:rgba(255,93,108,.2);color:var(--bad)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:13px}
+.kv dt{color:#bfe3ff}
+.kv dd{font-variant-numeric:tabular-nums;word-break:break-word}
+.kv dd.y{color:var(--y)}
+.empty{padding:16px;border-radius:14px;border:1.5px dashed rgba(255,255,255,.25);text-align:center;color:#c9dcf5;font-size:13px}
+.steps{padding:4px 4px 2px 22px;font-size:13px;line-height:1.5;color:#dce9fa}
+.steps li{margin-bottom:6px}
+.steps b{color:#fff}
+/* hover hints */
+.hint{position:fixed;z-index:999;max-width:240px;padding:6px 10px;border-radius:10px;background:#1a2a44;border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12px;font-weight:600;pointer-events:none;opacity:0;transition:opacity .12s;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.hint.show{opacity:1}
+/* floating pop-up */
+.ov{position:fixed;inset:0;z-index:900;background:rgba(3,8,18,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px)}
+.ov.open{display:flex}
+.pop{width:min(460px,100%);max-height:100%;overflow:auto;background:#0d1a30;border:1px solid rgba(255,255,255,.22);border-radius:22px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.ph2{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.ph2 h3{font-size:19px;font-weight:800}
+.ph2 .ib{margin-left:auto;width:36px;height:36px;font-size:16px}
+.pop label{display:block;font-size:12px;color:#bfe3ff;margin:6px 2px}
+.pop input{width:100%;padding:11px 12px;border-radius:12px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;font:600 14px ui-monospace,SFMono-Regular,Menlo,monospace}
+.pop input:focus{outline:none;border-color:var(--y)}
+.btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.b{padding:9px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font:800 14px -apple-system,system-ui,sans-serif;cursor:pointer}
+.b.pri{background:var(--y);border-color:var(--y);color:#07101f}
+.b.dng{border-color:rgba(255,93,108,.6);color:var(--bad)}
+.note{font-size:12px;color:#c9dcf5;margin-top:10px;line-height:1.45}
+.msg{font-size:13px;margin-top:8px;min-height:18px}
+.verdict{padding:14px;border-radius:16px;text-align:center;font-weight:800;font-size:17px;background:rgba(255,255,255,.08)}
+.verdict small{display:block;font-size:12.5px;font-weight:600;margin-top:4px;color:#c9dcf5}
+.verdict.live{background:rgba(62,207,142,.2);color:var(--ok)}.verdict.online{background:rgba(244,185,66,.18);color:var(--y)}.verdict.none{background:rgba(255,93,108,.2);color:var(--bad)}
+.b.wide{display:block;width:100%;margin-top:6px;text-align:center}
+code{font:600 12.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(255,255,255,.08);padding:1px 5px;border-radius:6px}
+</style>
+</head>
+<body>
+<header>
+  <img src="apple-touch-icon.png" alt="">
+  <h1>Station <i>Test</i></h1>
+  <span class="ver" data-hint="Version of this test page">v0.1</span>
+  <button class="ib" id="runBtn" data-hint="Run all tests again" aria-label="Run tests">↻</button>
+  <button class="ib" id="setBtn" data-hint="Settings: Mac mini address and GitHub token" aria-label="Settings">⚙︎</button>
+</header>
+
+<main>
+  <section class="card">
+    <div class="verdict" id="verdict">Checking…</div>
+    <div class="sec">Live: Mac mini (at home)</div>
+    <div class="tests" id="tLive" style="display:flex;flex-direction:column;gap:6px"></div>
+    <div class="sec">Online copy (anywhere)</div>
+    <div class="tests" id="tOnline" style="display:flex;flex-direction:column;gap:6px"></div>
+  </section>
+
+  <section class="card">
+    <div class="lh"><h2>Set up the secure address</h2></div>
+    <ol class="steps">
+      <li>On the Mac mini, put <b>make_cert.sh</b> in <code>~/TempestLogger</code> with the server, then in Terminal run <code>bash ~/TempestLogger/make_cert.sh</code> and restart the server.</li>
+      <li>At home, on this device, tap <b>Install certificate</b> below and choose <b>Allow</b>.</li>
+      <li>Open <b>Settings</b>, tap <b>Profile Downloaded</b> near the top, then <b>Install</b>.</li>
+      <li>In <b>Settings › General › About › Certificate Trust Settings</b>, turn on <b>Amankenzie Station (home network only)</b>.</li>
+      <li>Come back here and tap <b>↻</b>.</li>
+    </ol>
+    <button class="b pri wide" id="certBtn" data-hint="Download the Mac mini's certificate (works at home only)">Install certificate</button>
+    <div class="note">Do steps 2–5 once on the iPad and once on the iPhone. The certificate only works for home-network addresses, so it can't vouch for any real website.</div>
+  </section>
+</main>
+
+<div class="ov" id="ov">
+  <div class="pop" role="dialog" aria-modal="true" aria-labelledby="popT">
+    <div class="ph2"><h3 id="popT">Settings</h3><button class="ib" id="closeBtn" data-hint="Close settings" aria-label="Close">✕</button></div>
+    <label for="addr">Mac mini address</label>
+    <input id="addr" type="text" inputmode="decimal" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="192.168.x.x">
+    <label for="tok">GitHub token (read-only, Logs only)</label>
+    <input id="tok" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">
+    <div class="btns">
+      <button class="b pri" id="saveBtn" data-hint="Save on this device and run the tests">Save &amp; test</button>
+      <button class="b" id="showBtn" data-hint="Show or hide the token">Show</button>
+      <button class="b" id="copyBtn" data-hint="Copy the saved token to the clipboard">Copy token</button>
+      <button class="b dng" id="delBtn" data-hint="Remove the token from this device (asks first)">Remove token</button>
+    </div>
+    <div class="msg" id="msg"></div>
+    <div class="note">Both are stored only in this browser on this device, never in the page code or on GitHub.</div>
+  </div>
+</div>
+
+<div class="hint" id="hint"></div>
+
+<script>
+(() => {
+  const VERSION = 'v0.1';
+  const API = 'https://api.github.com/repos/voodoovid/logs', BRANCH = 'live';
+  const PORT = 8124, NEED = 'v1.20', FRESH_MIN = 20;
+  const K_ADDR = 'station.macAddr', K_TOK = 'station.githubToken', K_OLD = 'remoteTest.githubToken';
+  const $ = id => document.getElementById(id);
+  const ls = {
+    get(k){ try { return localStorage.getItem(k) || ''; } catch { return ''; } },
+    set(k, v){ try { localStorage.setItem(k, v); return true; } catch { return false; } },
+    del(k){ try { localStorage.removeItem(k); } catch {} }
+  };
+  // a token already saved by Remote Test (same site) is picked up once, so it needn't be pasted again
+  if (!ls.get(K_TOK) && ls.get(K_OLD)) ls.set(K_TOK, ls.get(K_OLD));
+  const addr = () => ls.get(K_ADDR).trim();
+  const token = () => ls.get(K_TOK).trim();
+  const vnum = v => { const m = /v(\d+)\.(\d+)/.exec(v || ''); return m ? +m[1] * 1000 + +m[2] : 0; };
+  const ago = ms => { const m = Math.round(ms / 60000); return m < 1 ? 'under a minute ago' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.floor(m/60)} h ${m%60} min ago` : `${Math.floor(m/1440)} day${Math.floor(m/1440) === 1 ? '' : 's'} ago`; };
+
+  const LIVE = [['addr','Mac mini address saved'],['tls','Secure address answers'],['data','Live data readable'],['post','Can send changes']];
+  const ONL = [['tok','GitHub token saved'],['copy','Online copy readable'],['fresh','Online copy up to date']];
+  const draw = (box, list) => { $(box).innerHTML = list.map(([id, n]) => `<div class="t" id="t-${id}"><div class="dot">…</div><div><b>${n}</b><span>Waiting</span></div></div>`).join(''); };
+  function mark(id, st, detail){
+    const el = $('t-' + id); if (!el) return;
+    const m = { pass:['pass','PASS'], fail:['fail','FAIL'], info:['info','INFO'], skip:['skip','SKIP'] }[st];
+    el.className = 't ' + m[0]; el.querySelector('.dot').textContent = m[1]; el.querySelector('span').textContent = detail;
+  }
+  const skip = (list, from, why) => { let on = false; for (const [id] of list){ if (id === from) on = true; if (on) mark(id, 'skip', why); } };
+
+  async function timed(url, opt, ms){
+    const c = new AbortController(), t = setTimeout(() => c.abort(), ms), t0 = performance.now();
+    try { const r = await fetch(url, { cache: 'no-store', ...opt, signal: c.signal }); return { r, ms: Math.round(performance.now() - t0) }; }
+    finally { clearTimeout(t); }
+  }
+
+  async function testLive(){
+    const a = addr();
+    if (!a){ mark('addr', 'fail', 'Tap ⚙︎ and enter the Mac mini address (192.168.x.x).'); skip(LIVE, 'tls', 'Needs the address first'); return false; }
+    mark('addr', 'pass', a);
+    const base = `https://${a}:${PORT}`;
+    let res;
+    try { res = await timed(base + '/api/ping', {}, 2500); }
+    catch (e){
+      mark('tls', 'fail', e.name === 'AbortError'
+        ? 'No answer within 2.5 s. Normal away from home; at home, check the Mac mini is on.'
+        : 'Refused. Away from home this is normal. At home: run make_cert.sh and restart the server, or this device doesn\'t trust the certificate yet (see Set up the secure address).');
+      skip(LIVE, 'data', 'Secure address not reachable'); return false;
+    }
+    let j = {}; try { j = await res.r.json(); } catch {}
+    if (vnum(j.version) < vnum(NEED)){ mark('tls', 'fail', `Answered, but the server is ${j.version || 'older'}; ${NEED} or newer is needed.`); skip(LIVE, 'data', 'Server too old'); return false; }
+    mark('tls', 'pass', `Server ${j.version} · ${res.ms} ms · certificate trusted`);
+    try {
+      const s = await (await timed(base + '/api/stats', {}, 5000)).r.json();
+      const n = (s.counts && s.counts.obs_st) || 0, age = s.now - (s.last || 0);
+      mark('data', n ? 'pass' : 'fail', n ? `${n.toLocaleString()} readings · last ${ago(age * 1000)}` : 'No readings saved yet');
+    } catch { mark('data', 'fail', 'Couldn\'t read the station data.'); }
+    try {   // a JSON POST makes the browser ask first (preflight); a readable "not found" proves both steps work, and changes nothing
+      const p = await timed(base + '/api/ping', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }, 5000);
+      mark('post', p.r.status === 404 ? 'pass' : 'info', p.r.status === 404 ? 'Rain test and settings can be changed from here' : `Unexpected answer (HTTP ${p.r.status})`);
+    } catch { mark('post', 'fail', 'The browser blocked sending changes.'); }
+    return true;
+  }
+
+  async function testOnline(){
+    const t = token();
+    if (!t){ mark('tok', 'fail', 'Tap ⚙︎ and paste the read-only GitHub token.'); skip(ONL, 'copy', 'Needs a token first'); return null; }
+    mark('tok', 'pass', 'Stored in this browser only (…' + t.slice(-4) + ')');
+    let res;
+    try { res = await timed(`${API}/contents/manifest.json?ref=${BRANCH}`, { headers: { Authorization: 'Bearer ' + t, Accept: 'application/vnd.github.raw+json', 'X-GitHub-Api-Version': '2022-11-28' } }, 15000); }
+    catch { mark('copy', 'fail', 'Couldn\'t reach GitHub.'); skip(ONL, 'fresh', 'GitHub not reachable'); return null; }
+    if (res.r.status === 401){ mark('copy', 'fail', 'GitHub rejected the token (mistyped or expired).'); skip(ONL, 'fresh', 'Token not accepted'); return null; }
+    if (res.r.status === 404){ mark('copy', 'fail', 'No online copy yet: the Mac mini hasn\'t pushed (check Health › Online copy).'); skip(ONL, 'fresh', 'Nothing pushed yet'); return null; }
+    if (!res.r.ok){ mark('copy', 'fail', `GitHub answered HTTP ${res.r.status}.`); skip(ONL, 'fresh', 'Not read'); return null; }
+    let m; try { m = await res.r.json(); } catch { mark('copy', 'fail', 'The copy is damaged.'); skip(ONL, 'fresh', 'Not read'); return null; }
+    const n = Object.keys(m.files || {}).length;
+    mark('copy', 'pass', `${n} views · pushed by Station ${m.version} · ${res.ms} ms`);
+    const age = Date.now() - Date.parse(m.pushed_at);
+    mark('fresh', age <= FRESH_MIN * 60000 ? 'pass' : 'fail', 'Last push ' + ago(age) + (age > FRESH_MIN * 60000 ? ' (expected every 15 min)' : ''));
+    return age;
+  }
+
+  async function run(){
+    draw('tLive', LIVE); draw('tOnline', ONL);
+    const v = $('verdict'); v.className = 'verdict'; v.textContent = 'Checking…';
+    const [live, onl] = await Promise.all([testLive(), testOnline()]);   // both at once: no waiting
+    if (live){ v.className = 'verdict live'; v.innerHTML = 'Station would use: LIVE from the Mac mini<small>' + (onl != null ? 'Online copy is ready too, for when you leave home' : 'Online copy not ready yet') + '</small>'; }
+    else if (onl != null){ v.className = 'verdict online'; v.innerHTML = 'Station would use: ONLINE copy<small>Updated ' + ago(onl) + (addr() ? ' · the Mac mini isn\'t reachable from here' : '') + '</small>'; }
+    else { v.className = 'verdict none'; v.innerHTML = 'No data source yet<small>Fix a red item below</small>'; }
+  }
+
+  $('certBtn').onclick = () => {
+    const a = addr();
+    if (!a){ openSet(); say('var(--bad)', 'Enter the Mac mini address first.'); return; }
+    location.href = `http://${a}:8123/station_ca.crt`;
+  };
+
+  /* settings pop-up */
+  const ov = $('ov'), tok = $('tok'), msg = $('msg');
+  const say = (c, t) => { msg.style.color = c; msg.textContent = t; };
+  function openSet(){ $('addr').value = addr(); tok.value = token(); tok.type = 'password'; $('showBtn').textContent = 'Show'; msg.textContent = ''; ov.classList.add('open'); }
+  function closeSet(){ ov.classList.remove('open'); }
+  $('setBtn').onclick = openSet; $('closeBtn').onclick = closeSet;
+  ov.addEventListener('click', e => { if (e.target === ov) closeSet(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSet(); });
+  $('showBtn').onclick = () => { const h = tok.type === 'password'; tok.type = h ? 'text' : 'password'; $('showBtn').textContent = h ? 'Hide' : 'Show'; };
+  $('saveBtn').onclick = () => {
+    const a = $('addr').value.trim().replace(/^https?:\/\//, '').replace(/[:/].*$/, ''), t = tok.value.trim();
+    if (a && !/^[A-Za-z0-9.-]+$/.test(a)) return say('var(--bad)', 'That address doesn\'t look right (like 192.168.x.x).');
+    if (!(a ? ls.set(K_ADDR, a) : (ls.del(K_ADDR), true)) || !(t ? ls.set(K_TOK, t) : true)) return say('var(--bad)', 'This browser blocked saving (private mode?).');
+    closeSet(); run();
+  };
+  $('copyBtn').onclick = async () => {
+    const v = token(); if (!v) return say('var(--bad)', 'No saved token to copy.');
+    try { await navigator.clipboard.writeText(v); say('var(--ok)', 'Token copied.'); }
+    catch { tok.type = 'text'; tok.value = v; tok.select(); say('var(--y)', 'Copy blocked — token selected, copy it manually.'); }
+  };
+  $('delBtn').onclick = () => {
+    if (!token()) return say('var(--bad)', 'No saved token to remove.');
+    if (!confirm('Remove the GitHub token from this device?')) return;
+    ls.del(K_TOK); ls.del(K_OLD); tok.value = ''; say('var(--ok)', 'Token removed.'); run();
+  };
+  $('runBtn').onclick = run;
+
+  /* hover hints */
+  const hint = $('hint');
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('[data-hint]'); if (!el){ hint.classList.remove('show'); return; }
+    hint.textContent = el.dataset.hint; const r = el.getBoundingClientRect(); hint.classList.add('show');
+    const w = hint.offsetWidth, h = hint.offsetHeight;
+    const x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8);
+    let y = r.bottom + 8; if (y + h > innerHeight - 8) y = r.top - h - 8;
+    hint.style.left = x + 'px'; hint.style.top = y + 'px';
+  });
+  document.addEventListener('mouseout', e => { if (!e.relatedTarget || !e.relatedTarget.closest?.('[data-hint]')) hint.classList.remove('show'); });
+
+  run();   // start immediately
+})();
+</script>
+</body>
+</html>
