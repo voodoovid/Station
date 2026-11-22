@@ -257,6 +257,17 @@
   addEventListener('keydown',e=>{if(e.key==='Escape'&&ov)ov.classList.remove('open')});
   document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#srcbtn'))openPanel()});
 
+  /* ---- updates: GitHub Pages and Safari can keep an old copy for about 10 minutes, so the app asks for its own
+     page fresh (a one-off address skips every cache) and reloads itself when a newer version is up ---- */
+  let updAt=0;
+  async function checkUpdate(){
+    if(onMac||document.hidden||Date.now()-updAt<60000)return;updAt=Date.now();
+    try{const r=await realFetch(location.pathname+'?u='+Date.now(),{cache:'no-store'});if(!r.ok)return;
+      const m=/const APP_V='(v\d+\.\d+)'/.exec(await r.text());
+      if(m&&vnum(m[1])>vnum(APP_V))location.replace(location.pathname+'?v='+m[1].slice(1))}catch(e){}
+  }
+  if(!onMac){setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()})}
+
   window.STN={APP_V,SRV_NEED,vnum,ready,get mode(){return S.mode},pushedAgo,panelHTML,
     bindPanel:root=>{if(ov){const q=ov.querySelector('.stnp');if(q){ov.classList.remove('open');q.remove()}}bindPanel(root)},
     openPanel,barH:()=>barEl&&!barEl.hidden?barEl.offsetHeight-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat0'))||0):0,snapName};

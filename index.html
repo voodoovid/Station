@@ -46,7 +46,7 @@ html #bd{padding:calc(var(--sat,env(safe-area-inset-top)) + 12px) 18px calc(env(
    the token are stored only in this browser. */
 (function(){
   'use strict';
-  const APP_V='v1.23', SRV_NEED='v1.20';
+  const APP_V='v1.24', SRV_NEED='v1.20';
   const API='https://api.github.com/repos/voodoovid/logs', BRANCH='live', PORT=8124;
   const K_ADDR='station.macAddr', K_TOK='station.githubToken', K_OLD='remoteTest.githubToken', K_FORCE='station.forceOnline';
   const PROBE_MS=1800, WATCH_MS=4000, MAN_MS=60000, RECHECK_MS=60000;
@@ -296,6 +296,17 @@ html #bd{padding:calc(var(--sat,env(safe-area-inset-top)) + 12px) 18px calc(env(
   }
   addEventListener('keydown',e=>{if(e.key==='Escape'&&ov)ov.classList.remove('open')});
   document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#srcbtn'))openPanel()});
+
+  /* ---- updates: GitHub Pages and Safari can keep an old copy for about 10 minutes, so the app asks for its own
+     page fresh (a one-off address skips every cache) and reloads itself when a newer version is up ---- */
+  let updAt=0;
+  async function checkUpdate(){
+    if(onMac||document.hidden||Date.now()-updAt<60000)return;updAt=Date.now();
+    try{const r=await realFetch(location.pathname+'?u='+Date.now(),{cache:'no-store'});if(!r.ok)return;
+      const m=/const APP_V='(v\d+\.\d+)'/.exec(await r.text());
+      if(m&&vnum(m[1])>vnum(APP_V))location.replace(location.pathname+'?v='+m[1].slice(1))}catch(e){}
+  }
+  if(!onMac){setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()})}
 
   window.STN={APP_V,SRV_NEED,vnum,ready,get mode(){return S.mode},pushedAgo,panelHTML,
     bindPanel:root=>{if(ov){const q=ov.querySelector('.stnp');if(q){ov.classList.remove('open');q.remove()}}bindPanel(root)},
@@ -786,24 +797,24 @@ html #bd{padding:calc(var(--sat,env(safe-area-inset-top)) + 12px) 18px calc(env(
 .tf3sw button.on{background:var(--acc);border-color:var(--acc);color:#1a1405}
 </style></head><body><div class="wrap">
 <header>
-  <div class="tt"><h1 class="stn"><span class="y">Station</span> History <small class="vv">v1.23</small></h1><div class="sub" id="sub">Loading…</div></div>
+  <div class="tt"><h1 class="stn"><span class="y">Station</span> History <small class="vv">v1.24</small></h1><div class="sub" id="sub">Loading…</div></div>
   <button class="fbtn" id="fbtn" aria-label="To Station Forecast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 18h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.4 1.6A3.3 3.3 0 0 0 7 18z"/><path d="M12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4"/></svg><span class="ft"><b class="to">To:</b><b class="st">Station</b><b class="w">Forecast</b></span></button><div class="hctl"><button class="ibtn" id="cbtn" type="button" aria-label="Station window: forecasts, rain test, records and health"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><i class="rdot"></i><i class="hdot" id="hdot"></i><i class="gdot"></i></button><button class="ibtn q" id="gbtn" type="button" aria-label="User's guide">?</button><div class="seg" id="seg"></div></div>
 </header>
 <div class="tiles" id="tiles"></div>
 <div id="charts"></div>
-<div class="ver"><span class="y">Amankenzie</span> Local History v1.23 &middot; <button type="button" class="srclink" id="srcbtn" data-hint="Data source: live from the Mac mini or the online copy">Checking…</button> &middot; <a href="#health" id="ctl">connection test</a><br>Press and hold a chart for details</div>
+<div class="ver"><span class="y">Amankenzie</span> Local History v1.24 &middot; <button type="button" class="srclink" id="srcbtn" data-hint="Data source: live from the Mac mini or the online copy">Checking…</button> &middot; <a href="#health" id="ctl">connection test</a><br>Press and hold a chart for details</div>
 </div>
 <div id="fc" role="dialog" aria-label="Station forecast"><div class="wrap">
-  <div class="fhead"><div class="tt"><h1 class="stn"><span class="y">Station</span> Forecast <small class="vv">v1.23</small></h1><div class="sub" id="fsub">Next 6 hours from your station only</div></div>
+  <div class="fhead"><div class="tt"><h1 class="stn"><span class="y">Station</span> Forecast <small class="vv">v1.24</small></h1><div class="sub" id="fsub">Next 6 hours from your station only</div></div>
   <button class="fbtn" id="fclose" type="button" aria-label="To Station History"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="ft"><b class="to">To:</b><b class="st">Station</b><b class="w">History</b></span></button>
   <div class="fbar"><button class="ibtn" id="fstn" type="button" aria-label="Station window: forecasts, rain test, records and health"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><i class="rdot"></i><i class="hdot" id="fhdot"></i><i class="gdot"></i></button><button class="ibtn q" id="fguide" type="button" aria-label="User's guide">?</button><button class="ibtn" id="fgear" type="button" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><i class="gdot"></i></button></div></div>
   <div id="fbody"><div class="wait">Loading…</div></div>
-  <div class="ver"><span class="y">Amankenzie</span> Local History v1.23<span class="vx"> &middot; your own forecast runs on the Mac mini and uses only your station</span></div>
+  <div class="ver"><span class="y">Amankenzie</span> Local History v1.24<span class="vx"> &middot; your own forecast runs on the Mac mini and uses only your station</span></div>
   <div id="fset"><div class="sheet"><div class="fhead"><h2>Settings</h2><button class="xbtn" id="fsclose" type="button">Done</button></div><div id="fsetbody"></div></div></div>
 </div></div>
-<div id="dp" role="dialog" aria-label="Chart details"><div class="dwin" id="dwin"><div class="dhead"><div class="wrap dhw"><div class="tt"><h1 class="stn"><span class="y" id="dpt">Details</span> <small class="vv">v1.23</small></h1><div class="sub" id="dps"></div></div><div class="dctl"><div class="seg" id="dseg"></div><button class="xbtn" id="dpclose" type="button">Close</button></div></div></div><div class="wrap dbody" id="dpb"></div></div></div>
+<div id="dp" role="dialog" aria-label="Chart details"><div class="dwin" id="dwin"><div class="dhead"><div class="wrap dhw"><div class="tt"><h1 class="stn"><span class="y" id="dpt">Details</span> <small class="vv">v1.24</small></h1><div class="sub" id="dps"></div></div><div class="dctl"><div class="seg" id="dseg"></div><button class="xbtn" id="dpclose" type="button">Close</button></div></div></div><div class="wrap dbody" id="dpb"></div></div></div>
 <div id="gd" hidden role="dialog" aria-modal="true" aria-labelledby="gdt"><div class="gc">
-  <div class="gh"><img src="apple-touch-icon.png" alt="" width="40" height="40"><div class="gt"><h2 id="gdt">Quick Guide</h2><p><b>Station</b> History &amp; Forecast &middot; v1.23</p></div><button id="gdx" type="button">Done</button></div>
+  <div class="gh"><img src="apple-touch-icon.png" alt="" width="40" height="40"><div class="gt"><h2 id="gdt">Quick Guide</h2><p><b>Station</b> History &amp; Forecast &middot; v1.24</p></div><button id="gdx" type="button">Done</button></div>
   <div class="gb">
     <div class="gs">Both pages</div>
     <div class="gi"><div class="gv"><div class="fbtn" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 18h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.4 1.6A3.3 3.3 0 0 0 7 18z"/><path d="M12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4"/></svg><span class="ft"><b class="to">To:</b><b class="st">Station</b><b class="w">Forecast</b></span></div></div><div class="gx"><b>Switch pages</b><span>Jump between Station History and Station Forecast. The other page has the matching button.</span></div></div>
@@ -1867,7 +1878,7 @@ function tabbed(key){
   $('ptabs').hidden=false;
 }
 // ---- connection test ----
-const PAGE_V='v1.23';const SRV_NEED=STN.SRV_NEED;const srvOK=v=>STN.vnum(v)>=STN.vnum(SRV_NEED);
+const PAGE_V='v1.24';const SRV_NEED=STN.SRV_NEED;const srvOK=v=>STN.vnum(v)>=STN.vnum(SRV_NEED);
 async function probe(url,ms){
   const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||6000),t0=performance.now();
   try{const r=await fetch(url,{cache:'no-store',signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);
