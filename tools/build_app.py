@@ -19,7 +19,7 @@ CSS = """<style>
 html{background:#0b1017;color-scheme:dark}
 body::before{content:"";position:fixed;top:0;left:0;right:0;height:var(--sat,env(safe-area-inset-top));background:#0b1017;z-index:60;pointer-events:none}
 #stnbar{position:fixed;top:0;left:0;right:0;z-index:2147482000;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 10px;
-  padding:var(--sat0,env(safe-area-inset-top)) 14px 0;min-height:calc(var(--sat0,env(safe-area-inset-top)) + 34px);border:0;border-bottom:1px solid rgba(244,185,66,.45);
+  padding:calc(var(--sat0,env(safe-area-inset-top)) + 22px) 14px 10px;min-height:calc(var(--sat0,env(safe-area-inset-top)) + 22px + 40px);border:0;border-bottom:1px solid rgba(244,185,66,.45);
   background:#21190a;color:#f4b942;font:600 14px/1.25 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;cursor:pointer;text-align:center}
 #stnbar[hidden]{display:none}
 #stnbar b{font-weight:800;letter-spacing:.2px}

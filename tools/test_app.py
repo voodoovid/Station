@@ -118,6 +118,8 @@ async def run():
         ok("away: online copy", mode == "online" and "Online copy" in bar, f"{bar} · charts in {dt:.1f}s")
         geo = await page.evaluate("(()=>{const b=document.getElementById('stnbar').getBoundingClientRect(),h=document.querySelector('header').getBoundingClientRect();return {bb:b.bottom,ht:h.top,sat:getComputedStyle(document.documentElement).getPropertyValue('--sat')}})()")
         ok("away: notice doesn't cover the header", geo["bb"] <= geo["ht"], str(geo))
+        tt = await page.evaluate("(()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('stnbar'));return r.getBoundingClientRect().top})()")
+        ok("away: notice text 22px+ below the status bar (clear of the fade)", tt >= 22, str(tt))
         await page.screenshot(path="/tmp/shot_away_ipad.png")
         # POST is refused politely
         r = await page.evaluate("fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(async r=>[r.status,(await r.json()).error])")

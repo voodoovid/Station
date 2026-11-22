@@ -259,6 +259,6 @@
 
   window.STN={APP_V,SRV_NEED,vnum,ready,get mode(){return S.mode},pushedAgo,panelHTML,
     bindPanel:root=>{if(ov){const q=ov.querySelector('.stnp');if(q){ov.classList.remove('open');q.remove()}}bindPanel(root)},
-    openPanel,barH:()=>barEl&&!barEl.hidden?barEl.offsetHeight-(parseFloat(getComputedStyle(barEl).paddingTop)||0):0,snapName};
+    openPanel,barH:()=>barEl&&!barEl.hidden?barEl.offsetHeight-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat0'))||0):0,snapName};
   bar();
 })();
