@@ -163,8 +163,28 @@ async def run():
         await page.screenshot(path="/tmp/shot_away_iphone_fc.png")
         fc = await page.evaluate("(()=>{const b=document.getElementById('stnbar').getBoundingClientRect(),h=document.querySelector('#fc .fhead').getBoundingClientRect();return [b.bottom,h.top]})()")
         ok("iPhone: forecast page starts below the notice", fc[0] <= fc[1], str(fc))
+        await page.click("#fgear"); await page.wait_for_timeout(600)
+        await page.screenshot(path="/tmp/shot_iphone_settings.png")
+        await page.evaluate("$('fset').classList.remove('open');$('fclose').click()")
         ok("iPhone: no page errors", not errs, "; ".join(errs[:3]))
         await page.context.close()
+
+        # 4b. every window clears the notice, iPad and iPhone
+        for (w, h, mob) in ((1180, 820, False), (440, 956, True)):
+            page, net, errs = await newpage(False, both, w, h, mob)
+            await page.wait_for_function("document.querySelector('#card-temp')", timeout=20000); await page.wait_for_timeout(500)
+            js = '''async()=>{const bb=document.getElementById('stnbar').getBoundingClientRect().bottom,out={};
+              const t=(k,sel)=>{const e=document.querySelector(sel);out[k]=e?Math.round(e.getBoundingClientRect().top-bb):null};
+              $('fbtn').click();await new Promise(r=>setTimeout(r,400));$('fgear').click();await new Promise(r=>setTimeout(r,300));t('settings','#fset .sheet');
+              $('fset').classList.remove('open');$('fclose').click();
+              $('cbtn').click();await new Promise(r=>setTimeout(r,800));t('station window','#pop .pw');document.getElementById('pop').classList.remove('open');
+              $('gbtn').click();await new Promise(r=>setTimeout(r,300));t('guide','#gd .gc');$('gdx').click();
+              document.getElementById('bd').style.display='flex';document.getElementById('bdc').innerHTML='<div style=height:900px></div>';t('source reason','#bd .bc');document.getElementById('bd').style.display='';
+              STN.openPanel();await new Promise(r=>setTimeout(r,200));t('data source','#stnsrc .sheet');document.getElementById('stnsrc').classList.remove('open');
+              return out}'''
+            out = await page.evaluate(js)
+            ok("%s: every window below the notice" % ("iPhone" if mob else "iPad"), all(v is not None and v >= 0 for v in out.values()), str(out))
+            await page.context.close()
 
         # 5. nothing set up
         page, net, errs = await newpage(False, {})

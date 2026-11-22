@@ -51,6 +51,9 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:var(--sat,env
 .stnf .set button.alt{background:transparent;color:var(--tx);border:1px solid var(--line)}
 .stnf .set button.dng{color:#ff8a9b;border-color:rgba(255,107,139,.5)}
 .stnm{min-height:20px;margin-top:10px;font-size:14px}
+/* every window starts below the status bar and the notice (Settings and the source-reason window had fixed padding) */
+#fc #fset{position:fixed;padding:calc(var(--sat,env(safe-area-inset-top)) + 12px) 16px calc(env(safe-area-inset-bottom) + 16px)}
+html #bd{padding:calc(var(--sat,env(safe-area-inset-top)) + 12px) 18px calc(env(safe-area-inset-bottom) + 18px)}
 </style>"""
 
 HEAD = ('<head><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
